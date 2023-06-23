@@ -1,0 +1,76 @@
+1. Coba buatlah Query statement untuk menampilkan result set orders seperti dibawah ini.
+Total Price didapat dari penjumlahan quantity dikali dengan price product yang dibeli saat order.
+Jawaban:
+SELECT O.OrderID, C.CustomerName, SUM(D.Quantity*P.Price) AS TotalPrice
+FROM Orders O
+INNER JOIN OrderDetails D on D.OrderID = O.OrderID
+INNER JOIN Customers C on O.CustomerID = C.CustomerID
+INNER JOIN Products P on D.ProductID = P.ProductID
+GROUP BY O.OrderID;
+
+2. Buatlah sebuah query yang menampilkan result set berapa jenis product yang sudah dibeli oleh setiap customer
+Jawaban:
+SELECT C.CustomerName, COUNT(D.ProductID) AS TotalProduct
+FROM Customers C
+LEFT JOIN Orders O on C.CustomerID = O.CustomerID
+LEFT JOIN OrderDetails D on D.OrderID = O.OrderID
+GROUP BY C.CustomerName
+ORDER BY C.CustomerName;
+
+3. Buatlah sebuah query untuk menampilkan result set untuk mencari berapa jumlah quantity untuk setiap product yang di order oleh setiap customer.
+Jawaban:
+SELECT C.CustomerName, P.ProductName, SUM(D.Quantity) AS TotalQuantityOrder
+FROM Customers C
+LEFT JOIN Orders O on C.CustomerID = O.CustomerID
+LEFT JOIN OrderDetails D on D.OrderID = O.OrderID
+LEFT JOIN Products P on P.ProductID = D.ProductID
+GROUP BY C.CustomerName, P.ProductName
+ORDER BY C.CustomerName, P.ProductName;
+
+4. Buatlah sebuah query untuk menampilkan result set mencari total quantity setiap product yang diorder disetiap negara asal dari customer.
+Jawaban:
+SELECT C.Country, P.ProductName, SUM(D.Quantity) as TotalQuantityPerProduct
+FROM Customers C
+INNER JOIN Orders O on C.CustomerID = O.CustomerID
+INNER JOIN OrderDetails D on D.OrderID = O.OrderID
+INNER JOIN Products P on D.ProductID = P.ProductID
+GROUP BY C.Country, P.ProductName;
+
+5. Buatlah query untuk menampilkan bonus untuk setiap customer berdasarkan total price dari yang sudah diorder dengan ketentuan:
+
+total price 1-500, maka bonus Hat
+total price 500-1000, maka bonus T-Shirt
+total price diatas 1000, maka bonus TV
+
+*Hint: Gunakan CASE
+
+Jawaban:
+SELECT O.OrderID, C.CustomerName, SUM(D.Quantity*P.Price) as TotalPrice,
+CASE
+    WHEN SUM(D.Quantity*P.Price) >= 0 AND SUM(D.Quantity*P.Price) <= 500 THEN 'Hat'
+    WHEN SUM(D.Quantity*P.Price) > 500 AND SUM(D.Quantity*P.Price) <= 1000 THEN 'Clothes'
+    WHEN SUM(D.Quantity*P.Price) > 1000 THEN 'TV'
+END as Bonus
+FROM Orders O
+INNER JOIN OrderDetails D on D.OrderID = O.OrderID
+INNER JOIN Customers C on O.CustomerID = C.CustomerID
+INNER JOIN Products P on D.ProductID = P.ProductID
+GROUP BY O.OrderID;
+
+6. Buatlah query untuk menampilkan total quantity yang diorder dari setiap product, serta tambahkan details untuk setiap product.
+jika total quantitynya dibawah 30 maka "Not Recomended Product",
+jika total quantitynya dibawah rata rata total quantity setiap product, maka "Recomended Product",
+jika selain itu, maka "Best Seller Product".
+
+*Hint: Gunakan CASE
+
+Jawaban:
+SELECT P.ProductName, SUM(D.Quantity) as 'Total Quantity Sold',
+CASE
+    WHEN SUM(D.Quantity) >= 0 AND SUM(D.Quantity) < 30 THEN 'Not Recomended Product'
+    WHEN SUM(D.Quantity) >= 30 AND SUM(D.Quantity) < (SELECT AVG(Total) FROM (SELECT SUM(Quantity) AS Total FROM OrderDetails GROUP BY ProductID)) THEN 'Recomended Product'
+    ELSE 'Best Seller Product'
+END as 'Details'
+FROM Products P
+INNER JOIN OrderDetails D on P.ProductID = D.ProductID
+GROUP BY D.ProductID;
